@@ -78,6 +78,8 @@
 #include "HAL/PlatformApplicationMisc.h"
 
 #include "Internationalization/Internationalization.h"
+#include <FoliageType.h>
+#include "HoudiniExLibrary.h"
 
 #define LOCTEXT_NAMESPACE HOUDINI_LOCTEXT_NAMESPACE 
 
@@ -3757,6 +3759,14 @@ FHoudiniEngineUtils::HapiCreateInputNodeForObjects(
                     HOUDINI_LOG_WARNING( TEXT( "Error creating input index %d on %d" ), InputIdx, ConnectedAssetId );
                 }
             }
+			else if (UFoliageType* FoliageType = Cast<UFoliageType>(InputObjects[InputIdx]))
+			{
+				// Creating an Input Node for Static Mesh Data
+				if (!HoudiniExLibrary::HapiCreateInputNodeForFoliageType(FoliageType, MeshAssetNodeId, OutCreatedNodeIds, nullptr, bExportAllLODs, bExportSockets))
+				{
+					HOUDINI_LOG_WARNING(TEXT("Error creating input index %d on %d"), InputIdx, ConnectedAssetId);
+				}
+			}
 
             if ( MeshAssetNodeId < 0 )
                 continue;

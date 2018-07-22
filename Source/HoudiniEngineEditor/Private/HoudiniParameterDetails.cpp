@@ -78,6 +78,7 @@
 #include "Widgets/Input/SVectorInputBox.h"
 #include "Widgets/Layout/SSeparator.h"
 #include "Widgets/Layout/SUniformGridPanel.h"
+#include <FoliageType.h>
 
 
 #define LOCTEXT_NAMESPACE HOUDINI_LOCTEXT_NAMESPACE
@@ -1499,7 +1500,7 @@ FHoudiniParameterDetails::Helper_CreateCustomActorPickerWidget( UHoudiniAssetInp
 /** Create a single geometry widget for the given input object */
 void FHoudiniParameterDetails::Helper_CreateGeometryWidget(
     UHoudiniAssetInput& InParam, int32 AtIndex, UObject* InputObject,
-    TSharedPtr< FAssetThumbnailPool > AssetThumbnailPool, TSharedRef< SVerticalBox > VerticalBox )
+    TSharedPtr< FAssetThumbnailPool > AssetThumbnailPool, TSharedRef< SVerticalBox > VerticalBox , UClass* ShowType)
 {
     TWeakObjectPtr<UHoudiniAssetInput> MyParam( &InParam );
 
@@ -1513,8 +1514,8 @@ void FHoudiniParameterDetails::Helper_CreateGeometryWidget(
     [
         SNew( SAssetDropTarget )
         .OnIsAssetAcceptableForDrop( SAssetDropTarget::FIsAssetAcceptableForDrop::CreateLambda(
-                []( const UObject* InObject ) {
-                    return InObject && InObject->IsA< UStaticMesh >();
+                [=]( const UObject* InObject ) {
+                    return InObject && InObject->IsA(ShowType);
             } ) )
             .OnAssetDropped( SAssetDropTarget::FOnAssetDropped::CreateUObject(
                 &InParam, &UHoudiniAssetInput::OnStaticMeshDropped, AtIndex ) )
@@ -1590,10 +1591,10 @@ void FHoudiniParameterDetails::Helper_CreateGeometryWidget(
         ];
 
     StaticMeshComboButton->SetOnGetMenuContent( FOnGetContent::CreateLambda(
-        [ MyParam, AtIndex, StaticMeshComboButton ]()
+        [=]()
         {
             TArray< const UClass * > AllowedClasses;
-            AllowedClasses.Add( UStaticMesh::StaticClass() );
+            AllowedClasses.Add( ShowType );
 
             TArray< UFactory * > NewAssetFactories;
             return PropertyCustomizationHelpers::MakeAssetPickerWithMenu(
@@ -2567,6 +2568,43 @@ FHoudiniParameterDetails::CreateWidgetInput( IDetailCategoryBuilder & LocalDetai
             ]
         ];
     }
+	else if (InParam.ChoiceIndex == EHoudiniAssetInputType::FoliageTypeInput)
+	{
+		const int32 NumInputs = InParam.InputObjects.Num();
+		VerticalBox->AddSlot().Padding(2, 2, 5, 2).AutoHeight()
+			[
+				SNew(SHorizontalBox)
+				+ SHorizontalBox::Slot()
+			.Padding(1.0f)
+			.VAlign(VAlign_Center)
+			.AutoWidth()
+			[
+				SNew(STextBlock)
+				.Text(FText::Format(LOCTEXT("NumArrayItemsFmt", "{0} elements"), FText::AsNumber(NumInputs)))
+			.Font(FEditorStyle::GetFontStyle(TEXT("PropertyWindow.NormalFont")))
+			]
+		+ SHorizontalBox::Slot()
+			.Padding(1.0f)
+			.VAlign(VAlign_Center)
+			.AutoWidth()
+			[
+				PropertyCustomizationHelpers::MakeAddButton(FSimpleDelegate::CreateUObject(&InParam, &UHoudiniAssetInput::OnAddToInputObjects), LOCTEXT("AddInput", "Adds a Geometry Input"), true)
+			]
+		+ SHorizontalBox::Slot()
+			.Padding(1.0f)
+			.VAlign(VAlign_Center)
+			.AutoWidth()
+			[
+				PropertyCustomizationHelpers::MakeEmptyButton(FSimpleDelegate::CreateUObject(&InParam, &UHoudiniAssetInput::OnEmptyInputObjects), LOCTEXT("EmptyInputs", "Removes All Inputs"), true)
+			]
+			];
+
+		for (int32 Ix = 0; Ix < NumInputs; Ix++)
+		{
+			UObject* InputObject = InParam.GetInputObject(Ix);
+			Helper_CreateGeometryWidget(InParam, Ix, InputObject, AssetThumbnailPool, VerticalBox, UFoliageType::StaticClass());
+		}
+	}
     else if ( InParam.ChoiceIndex == EHoudiniAssetInputType::WorldInput )
     {
         // Button : Start Selection / Use current selection + refresh

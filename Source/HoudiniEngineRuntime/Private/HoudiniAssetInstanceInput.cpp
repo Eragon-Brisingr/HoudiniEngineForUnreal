@@ -39,6 +39,7 @@
 
 #include "Internationalization/Internationalization.h"
 #include "HoudiniEngineBakeUtils.h"
+#include "Private/HoudiniExLibrary.h"
 
 #define LOCTEXT_NAMESPACE HOUDINI_LOCTEXT_NAMESPACE 
 
@@ -303,6 +304,11 @@ UHoudiniAssetInstanceInput::CreateInstanceInput()
         }
         else if ( ResultAttributeInfo.owner == HAPI_ATTROWNER_POINT )
         {
+			if (HoudiniExLibrary::CreateInstanceFoliageInput(this, AssetId, HoudiniGeoPartObject))
+			{
+				return true;
+			}
+
             TArray< FString > PointInstanceValues;
 
             if ( !HoudiniGeoPartObject.HapiGetAttributeDataAsString(

@@ -45,6 +45,7 @@ namespace EHoudiniAssetInputType
         AssetInput,
         CurveInput,
         LandscapeInput,
+		FoliageTypeInput,
         WorldInput
     };
 }

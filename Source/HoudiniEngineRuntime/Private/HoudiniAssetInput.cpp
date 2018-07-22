@@ -45,6 +45,7 @@
     #include "UnrealEdGlobals.h"
     #include "Editor/UnrealEdEngine.h"
 #endif
+#include <FoliageType.h>
 
 static FName NAME_HoudiniNoUpload( TEXT( "HoudiniNoUpload" ) );
 
@@ -347,6 +348,13 @@ UHoudiniAssetInput::CreateWidgetResources()
         if ( ChoiceIndex == EHoudiniAssetInputType::LandscapeInput )
             ChoiceStringValue = *ChoiceLabel;
     }
+	{
+		FString * ChoiceLabel = new FString(TEXT("Foliage Type Input"));
+		StringChoiceLabels.Add(TSharedPtr< FString >(ChoiceLabel));
+
+		if (ChoiceIndex == EHoudiniAssetInputType::FoliageTypeInput)
+			ChoiceStringValue = *ChoiceLabel;
+	}
     {
         FString * ChoiceLabel = new FString( TEXT( "World Outliner Input" ) );
         StringChoiceLabels.Add( TSharedPtr< FString >( ChoiceLabel ) );
@@ -666,8 +674,58 @@ UHoudiniAssetInput::UploadParameterValue()
 
     switch ( ChoiceIndex )
     {
+		case EHoudiniAssetInputType::FoliageTypeInput:
+		{
+			for (UObject*& Object : InputObjects)
+			{
+				if (Object && !Object->IsA<UFoliageType>())
+				{
+					Object = nullptr;
+				}
+			}
+			if (!InputObjects.Num())
+			{
+				// Either mesh was reset or null mesh has been assigned.
+				DisconnectAndDestroyInputAsset();
+			}
+			else
+			{
+				if (bStaticMeshChanged || bLoadedParameter)
+				{
+					// Disconnect and destroy currently connected asset, if there's one.
+					DisconnectAndDestroyInputAsset();
+
+					// Connect input and create connected asset. Will return by reference.
+					if (!FHoudiniEngineUtils::HapiCreateInputNodeForObjects(
+						HostAssetId, InputObjects, InputTransforms,
+						ConnectedAssetId, CreatedInputDataAssetIds, bExportAllLODs, bExportSockets))
+					{
+						bChanged = false;
+						ConnectedAssetId = -1;
+						return false;
+					}
+					else
+					{
+						Success &= ConnectInputNode();
+					}
+
+					bStaticMeshChanged = false;
+				}
+
+				Success &= UpdateObjectMergeTransformType();
+				Success &= UpdateObjectMergePackBeforeMerge();
+			}
+			break;
+		}
         case EHoudiniAssetInputType::GeometryInput:
         {
+			for (UObject*& Object : InputObjects)
+			{
+				if (Object && !Object->IsA<UStaticMesh>())
+				{
+					Object = nullptr;
+				}
+			}
             if ( ! InputObjects.Num() )
             {
                 // Either mesh was reset or null mesh has been assigned.
@@ -1468,6 +1526,11 @@ UHoudiniAssetInput::ChangeInputType(const EHoudiniAssetInputType::Enum& newType)
             break;
         }
 
+		case EHoudiniAssetInputType::FoliageTypeInput:
+		{
+			break;
+		}
+
         default:
         {
             // Unhandled new input type?
@@ -1533,6 +1596,11 @@ UHoudiniAssetInput::ChangeInputType(const EHoudiniAssetInputType::Enum& newType)
             // We are switching to Landscape input.
             break;
         }
+
+		case EHoudiniAssetInputType::FoliageTypeInput:
+		{
+			break;
+		}
 
         case EHoudiniAssetInputType::WorldInput:
         {

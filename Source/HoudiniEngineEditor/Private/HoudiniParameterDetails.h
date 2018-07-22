@@ -58,7 +58,7 @@ struct FHoudiniParameterDetails
 private:
     static FMenuBuilder Helper_CreateCustomActorPickerWidget( UHoudiniAssetInput& InParam, const TAttribute<FText>& HeadingText, const bool& bShowCurrentSelectionSection );
     static void Helper_CreateGeometryWidget( class UHoudiniAssetInput& InParam, int32 AtIndex, UObject* InputObject,
-                                             TSharedPtr< FAssetThumbnailPool > AssetThumbnailPool, TSharedRef< SVerticalBox > VerticalBox );
+                                             TSharedPtr< FAssetThumbnailPool > AssetThumbnailPool, TSharedRef< SVerticalBox > VerticalBox , UClass* ShowType = UStaticMesh::StaticClass());
     static FReply Helper_OnButtonClickSelectActors(
         TWeakObjectPtr<class UHoudiniAssetInput> InParam, FName DetailsPanelName );
 };

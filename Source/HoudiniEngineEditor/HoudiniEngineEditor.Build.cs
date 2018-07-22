@@ -187,6 +187,7 @@ public class HoudiniEngineEditor : ModuleRules
                 "TargetPlatform",
                 "UnrealEd",
                 "ApplicationCore",
+                "Foliage",
             }
         );
 
