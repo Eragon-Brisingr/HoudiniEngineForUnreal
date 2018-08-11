@@ -5689,11 +5689,7 @@ bool FHoudiniEngineUtils::CreateStaticMeshesFromHoudiniAsset(
 
             } // end for SplitId
 
-<<<<<<< HEAD
-            // Add the sockets we found to that part's meshes
-=======
             // Add the sockets we found to that part's meshes	    
->>>>>>> Houdini16.5-Unreal4.20
             if ( AllSockets.Num() > 0 )
             {
                 bool SocketsAdded = false;

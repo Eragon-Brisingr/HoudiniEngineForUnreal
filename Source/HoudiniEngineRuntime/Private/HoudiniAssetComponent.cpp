@@ -345,7 +345,7 @@ UHoudiniAssetComponent::UHoudiniAssetComponent( const FObjectInitializer & Objec
     Mobility = EComponentMobility::Static;
     PrimaryComponentTick.bCanEverTick = true;
     bTickInEditor = true;
-    bGenerateOverlapEvents = false;
+    SetGenerateOverlapEvents(false);
 
     // Similar to UMeshComponent.
     CastShadow = true;
@@ -2377,10 +2377,24 @@ UHoudiniAssetComponent::PostEditChangeProperty( FPropertyChangedEvent & Property
             {
                 HOUDINI_UPDATE_ALL_CHILD_COMPONENTS( UPrimitiveComponent, bAlwaysCreatePhysicsState );
             }
-            else if ( Property->GetName() == TEXT( "bGenerateOverlapEvents" ) )
-            {
-                HOUDINI_UPDATE_ALL_CHILD_COMPONENTS( UPrimitiveComponent, bGenerateOverlapEvents );
-            }
+			else if (Property->GetName() == TEXT("bGenerateOverlapEvents"))
+			{
+				TArray<UActorComponent*> ReregisterComponents;
+				const auto & LocalAttachChildren = GetAttachChildren();
+				for (TArray< USceneComponent * >::TConstIterator Iter(LocalAttachChildren); Iter; ++Iter)
+				{
+					UPrimitiveComponent* Component = Cast<UPrimitiveComponent>(*Iter);
+					if (Component)
+					{
+						Component->SetGenerateOverlapEvents(Component->GetGenerateOverlapEvents());
+						ReregisterComponents.Add(Component);
+					}
+				}
+				if (ReregisterComponents.Num() > 0)
+				{
+					FMultiComponentReregisterContext MultiComponentReregisterContext(ReregisterComponents);
+				}
+			}
             else if ( Property->GetName() == TEXT( "bMultiBodyOverlap" ) )
             {
                 HOUDINI_UPDATE_ALL_CHILD_COMPONENTS( UPrimitiveComponent, bMultiBodyOverlap );
