@@ -35,6 +35,7 @@
     Houdini Version: 16.5.530
     Houdini Engine Version: 3.1.14
     Unreal Version: 4.19.0
+    Unreal Version: 4.20.0
 
 */
 
@@ -187,6 +188,8 @@ public class HoudiniEngineEditor : ModuleRules
                 "TargetPlatform",
                 "UnrealEd",
                 "ApplicationCore",
+                "CurveEditor",
+                
                 "Foliage",
             }
         );

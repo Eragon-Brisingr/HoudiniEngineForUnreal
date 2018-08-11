@@ -509,7 +509,7 @@ FHoudiniEngineEditor::OpenInHoudini()
     FString UserTempPath = FPaths::CreateTempFilename(
         FPlatformProcess::UserTempDir(), 
         TEXT( "HoudiniEngine" ), TEXT( ".hip" ) );
-
+	
     // Save HIP file through Engine.
     std::string TempPathConverted( TCHAR_TO_UTF8( *UserTempPath ) );
     FHoudiniApi::SaveHIPFile(

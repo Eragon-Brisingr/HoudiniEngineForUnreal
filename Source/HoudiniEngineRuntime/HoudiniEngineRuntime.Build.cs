@@ -33,8 +33,8 @@
 /*
 
     Houdini Version: 16.5.496
-    Houdini Engine Version: 3.1.13
-    Unreal Version: 4.19.0
+    Houdini Version: 16.5.530
+.0
 
 */
 
@@ -48,7 +48,7 @@ public class HoudiniEngineRuntime : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseSharedPCHs;
         bool bIsRelease = true;
-        string HFSPath = "C:/cygwin/home/prisms/builder-new/Nightly16.5CMake/dev/hfs";
+        string HFSPath = "";
         string HoudiniVersion = "16.5.496";
         PlatformID platformId = Environment.OSVersion.Platform;
 
